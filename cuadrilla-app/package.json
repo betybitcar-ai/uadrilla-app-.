@@ -1,0 +1,23 @@
+{
+  "name": "cuadrilla-app",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de horarios académicos con autenticación por roles y chatbot con IA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node db/seed.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^13.0.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.22.2",
+    "express-session": "^1.18.0",
+    "openai": "^4.63.0",
+    "sqlite3": "^6.0.1"
+  }
+}

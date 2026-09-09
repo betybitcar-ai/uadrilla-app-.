@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Sistema de Horarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- ===================== PANTALLA DE AUTENTICACIÓN ===================== -->
+<section id="pantalla-auth" class="auth-screen">
+  <div class="auth-panel">
+    <div class="auth-brand" style="text-align: center;">
+      <img src="/logo.png" alt="EduSync" style="width: 90px; height: 90px; object-fit: contain; margin-bottom: 8px; border-radius: 50%;">
+      <h1>EduSync</h1>
+      <p>Gestión de horarios escolar</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab is-active" data-tab="login">Ingresar</button>
+      <button class="auth-tab" data-tab="registro">Crear cuenta</button>
+    </div>
+
+    <form id="form-login" class="auth-form is-active">
+      <label>Email
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>Contraseña
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn-primary">Ingresar</button>
+      <p class="auth-hint">Admin de prueba: admin@cuadrilla.com / admin123 (correr <code>npm run seed</code>)</p>
+      <p class="auth-error" id="login-error"></p>
+    </form>
+
+    <form id="form-registro" class="auth-form">
+      <label>Nombre completo
+        <input type="text" name="nombre" required>
+      </label>
+      <label>Email
+        <input type="email" name="email" required>
+      </label>
+      <label>Contraseña
+        <input type="password" name="password" required minlength="6">
+      </label>
+      <label>Rol
+        <select name="rol" id="select-rol">
+          <option value="alumno">Alumno</option>
+          <option value="profesor">Profesor</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </label>
+      <label id="campo-codigo" style="display:none;">Código de acceso
+        <input type="text" name="codigo" placeholder="Ingresá el código provisto por la institución">
+      </label>
+      <button type="submit" class="btn-primary">Crear cuenta</button>
+      <p class="auth-error" id="registro-error"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== APP PRINCIPAL ===================== -->
+<div id="app-principal" class="app-shell" hidden>
+
+  <nav class="sidebar">
+    <div class="sidebar-brand" style="display: flex; align-items: center; gap: 8px;">
+      <img src="/logo.png" alt="EduSync" style="width: 36px; height: 36px; object-fit: contain; border-radius: 50%;">
+      <span>EduSync</span>
+    </div>
+
+    <div class="sidebar-nav">
+      <button class="nav-item is-active" data-vista="horarios">Horarios</button>
+      <button class="nav-item nav-staff-only" data-vista="chat">Asistente de Ayuda</button>
+      <button class="nav-item nav-staff-only" data-vista="mensajes">Mensajes</button>
+      <button class="nav-item nav-staff-only" data-vista="ausencias">Ausencias</button>
+      <button class="nav-item" data-vista="noticias">Noticias</button>
+      <button class="nav-item btn-admin-only" data-vista="lista-negra" hidden>Lista Negra</button>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <span class="user-nombre" id="user-nombre">—</span>
+        <span class="user-rol" id="user-rol">—</span>
+      </div>
+      <button id="btn-logout" class="btn-ghost">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <main class="main-area">
+
+    <!-- ---- VISTA: HORARIOS ---- -->
+    <section id="vista-horarios" class="vista is-active">
+      <header class="vista-header">
+        <div>
+          <h2>Cuadrilla de horarios</h2>
+          <p>Estado en tiempo real de bloques y materias.</p>
+        </div>
+        <div class="search-box" style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="busqueda-horarios" placeholder="Buscar materia, profesor o día (ej: BT)..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc;">
+          <button id="btn-buscar-lupita" class="btn-secondary">🔍</button>
+        </div>
+        <button id="btn-nuevo-horario" class="btn-primary btn-admin-only" hidden>+ Nuevo bloque</button>
+      </header>
+
+      <form id="form-nuevo-horario" class="form-inline btn-admin-only" hidden>
+        <input type="text" name="dia" placeholder="Día (ej: Lunes)" required>
+        <input type="text" name="hora_inicio" placeholder="Hora inicio (ej: 08:00)" required>
+        <input type="text" name="hora_fin" placeholder="Hora fin (ej: 09:30)" required>
+        <input type="text" name="materia" placeholder="Materia" required>
+        <input type="text" name="salon" placeholder="Salón">
+        <button type="submit" class="btn-secondary">Crear</button>
+      </form>
+
+      <div class="tabla-wrap">
+        <table class="tabla-ledger" id="tabla-horarios">
+          <thead>
+            <tr>
+              <th>Día</th><th>Hora</th><th>Materia</th><th>Profesor</th><th>Salón</th><th>Estado</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Contenedor para la imagen del horario cuando se busca BT -->
+      <div id="contenedor-imagen-horario" style="margin-top: 20px; text-align: center;" hidden>
+        <img id="img-horario-bt" src="/horario-bt.png" alt="Grilla de Horarios BT" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      </div>
+    </section>
+
+    <!-- ---- VISTA: CHAT ---- -->
+    <section id="vista-chat" class="vista">
+      <header class="vista-header">
+        <div>
+          <h2>Asistente de Ayuda</h2>
+          <p>Resolvé dudas, consultá disponibilidad, pedí reemplazos o generá una imagen de la grilla.</p>
+        </div>
+      </header>
+
+      <div class="chat-box">
+        <div id="chat-mensajes" class="chat-mensajes"></div>
+        <form id="form-chat" class="chat-form">
+          <input type="text" id="chat-input" placeholder="Ej: ¿qué horarios están disponibles?" autocomplete="off">
+          <button type="submit" class="btn-primary">Enviar</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ---- VISTA: MENSAJES ---- -->
+    <section id="vista-mensajes" class="vista">
+      <header class="vista-header">
+        <div>
+          <h2>Mensajería interna</h2>
+          <p>Avisos del sistema y notificaciones entre profesores.</p>
+        </div>
+      </header>
+      <div id="lista-mensajes" class="lista-tarjetas"></div>
+    </section>
+
+    <!-- ---- VISTA: AUSENCIAS ---- -->
+    <section id="vista-ausencias" class="vista">
+      <header class="vista-header">
+        <div>
+          <h2>Registro de ausencias</h2>
+          <p>Marcá el día que faltás y el motivo. A partir de 67 faltas, el profesor pasa a la Lista Negra del Administrador.</p>
+        </div>
+      </header>
+
+      <form id="form-ausencia" class="form-inline">
+        <select name="horario_id" id="select-horario-ausencia">
+          <option value="">Falta general (no vinculada a un día puntual)</option>
+        </select>
+        <input type="text" name="motivo" placeholder="Motivo de la ausencia" required style="flex:1;">
+        <button type="submit" class="btn-secondary">Registrar</button>
+      </form>
+
+      <div id="lista-ausencias" class="lista-tarjetas"></div>
+    </section>
+
+    <!-- ---- VISTA: NOTICIAS ---- -->
+    <section id="vista-noticias" class="vista">
+      <header class="vista-header">
+        <div>
+          <h2>Noticias institucionales</h2>
+          <p>Avisos generales para toda la comunidad.</p>
+        </div>
+      </header>
+
+      <form id="form-noticia" class="form-inline btn-admin-only" hidden>
+        <input type="text" name="titulo" placeholder="Título">
+        <input type="text" name="contenido" placeholder="Contenido" style="flex:1;">
+        <button type="submit" class="btn-secondary">Publicar</button>
+      </form>
+
+      <div id="lista-noticias" class="lista-tarjetas"></div>
+    </section>
+
+    <!-- ---- VISTA: LISTA NEGRA (solo Administrador) ---- -->
+    <section id="vista-lista-negra" class="vista">
+      <header class="vista-header">
+        <div>
+          <h2>Lista Negra</h2>
+          <p>Profesores que alcanzaron el límite de faltas permitidas. Sección exclusiva del Administrador.</p>
+        </div>
+      </header>
+
+      <div id="lista-lista-negra" class="lista-tarjetas"></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
