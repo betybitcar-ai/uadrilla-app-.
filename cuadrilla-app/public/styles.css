@@ -6,16 +6,16 @@
    reservados exclusivamente para el estado disponible/ocupado de la grilla.
    ========================================================================= */
 :root {
-  --pizarra: #1B3A34;
-  --pizarra-oscuro: #10241F;
-  --papel: #F2ECDC;
-  --papel-borde: #D9CFB4;
-  --tinta: #201C12;
-  --tinta-suave: #5A5442;
-  --tiza: #EFEAD9;
-  --mostaza: #D2992F;
-  --mostaza-oscuro: #A9761F;
-  --verde-libre: #3F7A4E;
+  --pizarra: #777572;
+  --pizarra-oscuro: #ebeadf;
+  --papel: #fffffd;
+  --papel-borde: #0a0a09;
+  --tinta: #1b1a1a;
+  --tinta-suave: #1d1c1c;
+  --tiza: #131313;
+  --mostaza: #8d8c8c;
+  --mostaza-oscuro:#dfdbdb;
+  --verde-libre: #259e18;
   --rojo-ocupado: #A6472B;
 
   --font-display: 'Lora', serif;
@@ -153,7 +153,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
 
 .btn-ghost {
   background: none;
-  border: 1px solid rgba(239,234,217,0.35);
+  border: 1px solid rgb(236, 234, 227);
   color: var(--tiza);
   padding: 8px 14px;
   cursor: pointer;
@@ -184,7 +184,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
   font-family: var(--font-display);
   font-size: 18px;
   padding: 0 8px 24px;
-  border-bottom: 1px solid rgba(239,234,217,0.15);
+  border-bottom: 1px solid rgba(239, 234, 217, 0.907);
   margin-bottom: 20px;
 }
 
@@ -194,7 +194,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
   text-align: left;
   background: none;
   border: none;
-  color: rgba(239,234,217,0.75);
+  color: rgb(239, 234, 217);
   padding: 10px 12px;
   cursor: pointer;
   font-weight: 500;
@@ -274,7 +274,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
 .form-inline input {
   border: 1px solid var(--papel-borde);
   padding: 9px 12px;
-  background: #fff;
+  background: #fffdfd;
 }
 
 .link-accion {

@@ -115,6 +115,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Eventos para interactuar con el chatbot
+  const btnEnviarChat = document.getElementById('btn-enviar-chat');
+  const inputChat = document.getElementById('input-mensaje-chat');
+
+  if (btnEnviarChat && inputChat) {
+    btnEnviarChat.addEventListener('click', enviarMensajeChatbot);
+    inputChat.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') enviarMensajeChatbot();
+    });
+  }
+
   verificarSesion();
 });
 
@@ -148,7 +159,7 @@ async function verificarSesion() {
   cargarNoticias();
 }
 
-// Cargar y filtrar horarios con soporte para mostrar imagen BT/3º
+// Cargar y filtrar horarios
 async function cargarHorariosConFiltro(query = '') {
   const url = query ? `/api/horarios?search=${encodeURIComponent(query)}` : '/api/horarios';
   try {
@@ -157,7 +168,6 @@ async function cargarHorariosConFiltro(query = '') {
     const tbody = document.querySelector('#tabla-horarios tbody');
     const contenedorImg = document.getElementById('contenedor-imagen-horario');
     
-    // Mostrar u ocultar la imagen institucional si se busca BT o 3º
     if (query.toLowerCase().includes('bt') || query.toLowerCase().includes('3º')) {
       if (contenedorImg) contenedorImg.hidden = false;
     } else {
@@ -209,5 +219,47 @@ async function cargarNoticias() {
     `).join('');
   } catch (err) {
     console.error('Error al cargar noticias:', err);
+  }
+}
+
+// Envío y recepción de mensajes con el chatbot
+async function enviarMensajeChatbot() {
+  const inputChat = document.getElementById('input-mensaje-chat');
+  const contenedorMensajes = document.getElementById('chat-mensajes');
+  if (!inputChat || !contenedorMensajes) return;
+
+  const texto = inputChat.value.trim();
+  if (!texto) return;
+
+  // Agregar mensaje del usuario en pantalla
+  contenedorMensajes.innerHTML += `<div class="mensaje usuario"><strong>Tú:</strong> ${texto}</div>`;
+  inputChat.value = '';
+  contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+
+  try {
+    const res = await fetch('/api/chatbot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje: texto })
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Error en la respuesta');
+
+    let htmlRespuesta = `<div class="mensaje bot"><strong>Asistente:</strong> ${data.respuesta}</div>`;
+
+    // Si la respuesta incluye una imagen vectorial en formato SVG base64
+    if (data.tipo === 'imagen' && data.imagen_url) {
+      htmlRespuesta += `
+        <div class="mensaje bot">
+          <img src="${data.imagen_url}" alt="Esquema de Cuadrilla" style="max-width: 100%; border-radius: 8px; margin-top: 8px;">
+        </div>
+      `;
+    }
+
+    contenedorMensajes.innerHTML += htmlRespuesta;
+    contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+  } catch (err) {
+    contenedorMensajes.innerHTML += `<div class="mensaje error"><strong>Error:</strong> ${err.message}</div>`;
   }
 }

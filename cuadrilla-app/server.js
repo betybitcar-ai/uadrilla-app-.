@@ -20,16 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configuración de sesiones
 app.use(session({
-  secret: 'clave-secreta-edusync',
+  secret: process.env.SESSION_SECRET || 'clave-secreta-edusync',
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Cambiar a true si usas HTTPS en producción
+  cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
-// Servir archivos estáticos del frontend (HTML, CSS, JS) desde la carpeta 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+// Servir archivos estáticos de la carpeta 'public'
+app.use(express.static(path.resolve(__dirname, 'public')));
 
-// Montar las rutas de la API con sus prefijos correctos
+// Montar las rutas de la API
 app.use('/api/auth', authRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/noticias', noticiasRoutes);
@@ -38,12 +38,17 @@ app.use('/api/lista-negra', listaNegraRoutes);
 app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
-// Ruta por defecto para manejar el frontend (SPA) en caso de recargas
+// Ruta catch-all para servir index.html en cualquier otra petición
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+// Iniciar servidor solo en entorno local
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
+
+// Exportar la instancia de Express para Vercel
+module.exports = app;

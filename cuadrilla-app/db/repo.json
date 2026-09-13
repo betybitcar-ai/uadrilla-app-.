@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_XQKRkU0JMe6t9sYLzMAJl7TBRku5",
+      "name": "edu-sync",
+      "directory": ".",
+      "orgId": "team_6y7HYPqvFLtKYb6aTdKo3TGO"
+    }
+  ]
+}
